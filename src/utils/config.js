@@ -7,7 +7,7 @@ const isProduction = window.location.hostname !== 'localhost';
 
 // API base URL - automatically switches between local and production
 export const API_BASE_URL = isProduction 
-  ? 'https://your-backend-url.render.com' // Replace with your actual backend URL
+  ? 'https://retrend-final.onrender.com' // Updated production URL
   : 'https://retrend-final.onrender.com';
 
 // Razorpay configuration
