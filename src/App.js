@@ -38,7 +38,14 @@ function App() {
       const data = await response.json();
       setBackendStatus(data.status);
     } catch (error) {
-      setBackendStatus('offline');
+      console.error("Backend status check failed:", error);
+      // Don't set to offline immediately on first error, as it could be a transient issue
+      if (backendStatus === 'offline') {
+        // Already offline, keep it that way
+        return;
+      }
+      // Give it a retry
+      setTimeout(() => checkBackendStatus(), 3000);
     } finally {
       setLoading(false);
     }
@@ -49,46 +56,59 @@ function App() {
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
-        console.log('User is not authenticated');
+        console.log('No auth token found');
+        setAuth(false);
+        setLoading(false);
         return;
       }
+      
       const response = await fetch(`${API_BASE_URL}/auth-endpoint`, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
       });
+      
+      if (!response.ok) {
+        console.log('Authentication check failed with status:', response.status);
+        setAuth(false);
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
 
       if (data.isAuthenticated) {
         console.log('User is authenticated');
-        setAuth(true)
+        setAuth(true);
       } else {
-        console.log('User is not authenticated');
-        setAuth(false)
+        console.log('User is not authenticated according to server');
+        setAuth(false);
       }
     } catch (error) {
-      console.error(error);
-    }
-     finally {
+      console.error("Authentication check error:", error);
+      setAuth(false);
+    } finally {
       // Authentication check is complete, update loading state
       setLoading(false);
     }
   }
   
-
   useEffect(() => {
     checkBackendStatus();
     checkAuthentication();
   }, []);
 
-    if (loading) {
+  if (loading) {
     return <Loading />;
   }
+
+  // Use the public URL as the basename for the router
+  const basename = process.env.PUBLIC_URL || '';
 
   return (
     <div className="App">
       {backendStatus === 'online' ? (
-        <Router>
+        <Router basename={basename}>
           <Navbar auth={auth} setAuth={setAuth} />
           
           <Routes>
