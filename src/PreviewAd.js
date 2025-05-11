@@ -984,6 +984,11 @@ const PreviewAd = ({auth}) => {
     const isJobListing = data.catagory === "Jobs" || 
                          (data.subcatagory && data.subcatagory.toLowerCase().includes("job"));
     
+    // Only proceed if this is actually a job listing
+    if (!isJobListing) {
+      return null;
+    }
+
     if (data.jobData) {
       let jobDataToUse = data.jobData;
       
@@ -1048,7 +1053,7 @@ const PreviewAd = ({auth}) => {
           </Box>
         );
       }
-    } else if (isJobListing) {
+    } else {
       // For job listings without job data, show a message and fix button
       return (
         <Box 
@@ -1072,8 +1077,6 @@ const PreviewAd = ({auth}) => {
         </Box>
       );
     }
-    
-    return null;
   };
 
   return (
